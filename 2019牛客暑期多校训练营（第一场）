@@ -34,6 +34,9 @@ For each test case, print an integer which denotes the result.
 */
 题意很简单，就是告诉你三个点的坐标，在三角形内部任意取一点P，求被P分成的三个子三角形的最大子三角形的面积期望
 
+https://github.com/RespectTang/2019-/blob/master/trangle.png
+
+
 因为是求求期望，所以无论底边是哪一条都一样，所以讨论以BC为底边
 D,E,F分别为三边的中点，所以交点G为重心，所以此时ABG，BCG，ACG这三个小三角形的面积是一样的
 BC为底边，如果面积为三个子三角形中的最大面积，所以顶点应该在四边形ADGF中选取，连接DF，则四边形分为在DF上部分和DF下部分
