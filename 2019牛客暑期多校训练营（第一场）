@@ -1,0 +1,76 @@
+A
+B
+C
+D
+E
+/***********************************************************************************************************************************/
+F  Random Point in Triangle
+/*
+链接：https://ac.nowcoder.com/acm/contest/881/F
+来源：牛客网
+题目描述 
+Bobo has a triangle ABC with A(x1,y1),B(x2,y2) and C(x3,y3). Picking a point P uniformly in triangle ABC, 
+he wants to know the expectation value 
+E=max{SPAB,SPBC,SPCA} where SXYZ denotes the area of triangle XYZ.Print the value of 
+36×E. It can be proved that it is always an integer.
+输入描述:
+The input consists of several test cases and is terminated by end-of-file.
+Each test case contains six integers x1,y1,x2,y2,x3,y3.|x1|,|y1|,|x2|,|y2|,|x3|,|y3|≤108
+* There are at most 
+10
+5
+105 test cases.
+输出描述:
+For each test case, print an integer which denotes the result.
+示例1
+输入
+0 0 1 1 2 2
+0 0 0 0 1 1
+0 0 0 0 0 0
+输出
+0
+0
+0
+*/
+
+hint:https://www.cnblogs.com/WAautomaton/p/11211864.html
+
+#include<iostream>
+#include<algorithm>
+#include<cmath>
+using namespace std;
+typedef long long ll;
+
+struct Node{
+	ll x;
+	ll y;
+};
+
+bool cmp(Node a,Node b)
+{
+	return a.x<b.x;
+	
+}
+
+
+int main()
+{
+	Node a[3]; 
+	while(~scanf("%lld%lld%lld%lld%lld%lld",&a[0].x,&a[0].y,&a[1].x,&a[1].y,&a[2].x,&a[2].y))
+	{
+		sort(a,a+3,cmp);
+		
+		if(a[1].y>a[2].y)
+		{
+			Node temp;
+			temp=a[1];
+			a[1]=a[2];
+			a[2]=temp;
+		}
+		
+		ll s=11*((a[0].x*a[1].y-a[1].x*a[0].y)+(a[1].x*a[2].y-a[2].x*a[1].y)+(a[2].x*a[0].y-a[0].x*a[2].y));
+		s=abs(s);
+		printf("%lld\n",s);		
+	}
+
+}
