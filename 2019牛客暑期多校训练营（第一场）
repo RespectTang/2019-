@@ -1,4 +1,112 @@
-A
+A Equivalent Prefixes
+链接：https://ac.nowcoder.com/acm/contest/881/A
+来源：牛客网
+题意是讲在两个序列中找到所有区间的RMQ最小值相同，两种思路，一种是判断两个数组的笛卡尔树形结构是否相同，但至于怎么判断不会
+在网络上查了一下有讲通过栈来维护笛卡尔树从而判断结构
+笛卡尔树的中序遍历之后是原数组，每一个区间的两个节点距离最近的根节点为这个区间的最小值，可以解决区间RMQ问题
+
+第二种思路是单调栈
+遍历整个数组，使得单调栈内部数据单调上升，如果判断到当前数字比栈顶元素要小，则栈顶元素出栈，更新栈内元素的顺序
+这样可以保证在循环到的这个区间里的最小值一直是栈底元素
+代码为用数组模拟单调栈的写法
+#include<iostream>
+using namespace std;
+int m, a[100100], b[100100];
+int c[100100], d[100100];
+int main()
+{
+    while(cin >> m) {
+        a[0] = 0;
+        b[0] = 0; 
+        for (int i = 1; i <= m; i++)
+            cin >> a[i];
+        for (int i = 1; i <= m; i++)
+            cin >> b[i];
+        for (int i = 1; i <= m; i++) {
+            int p = i - 1;
+            while (a[p] > a[i])
+                p = c[p];
+            c[i] = p;
+        }
+        for (int i = 1; i <= m; i++) {
+            int p = i - 1;
+            while (b[p] > b[i])
+                p = d[p];
+            d[i] = p;
+        }
+        int sum = 0;
+        for (int i = 1; i <= m; i++) {
+            if (c[i] == d[i]) sum++;
+            else break;
+        }
+        cout << sum << endl;
+    }
+}
+
+这个是用单调栈的写法，思路来源于阮节
+#include<iostream>
+#include<stack>
+#include<cstdio>
+using namespace std;
+int main(){
+	int n;
+	while(cin>>n){
+		stack<int> s1,s2;
+		int a[100010],b[100010];
+		
+		for(int i=0;i<n;i++){
+			scanf("%d",&a[i]);
+		}
+		for(int i=0;i<n;i++){
+			scanf("%d",&b[i]);
+		}
+		
+		int k=1;
+		s1.push(a[0]);
+		s2.push(b[0]);
+		while(1){
+			if(k==n){
+				printf("%d\n",n);
+				break;
+			} 
+			while(1){
+				if(!s1.empty()){
+					if(a[k]<s1.top()){
+						s1.pop();
+					}else{
+						s1.push(a[k]);
+						break;
+					}
+				}else{
+					s1.push(a[k]);
+					break;
+				}
+			}
+			while(1){
+				if(!s2.empty()){
+					if(b[k]<s2.top()){
+						s2.pop();
+					}else{
+						s2.push(b[k]);
+						break;
+					}
+				}else{
+					s2.push(b[k]);
+					break;
+				}
+			}
+			if(s1.size()==s2.size()){
+				k++;
+			}else{
+				printf("%d\n",k);
+				break;
+			}
+		}
+	}
+	return 0;
+} 
+
+
 /***********************************************************************************************************************************/
 B Integration
 /*
@@ -10,7 +118,7 @@ B Integration
 hint：https://blog.csdn.net/weixin_43702895/article/details/96478844?tdsourcetag=s_pcqq_aiomsg
 
 先对于积分进行裂项相消化简，求出通项公式
-然后将积分算出来，最后的结果为一个分式
+然后将积分用换元法算出来，最后的结果为若干个分式的和，对于所有分式取模再求和在取模
 对于分数的取模，用到费马小定理求逆元
 每一行代码都注释了作用而且教程写得非常详细
 
@@ -99,35 +207,19 @@ int main(){
 }
 /***********************************************************************************************************************************/
 D
-E
+/***********************************************************************************************************************************/
+E ABBA
+链接：https://ac.nowcoder.com/acm/contest/881/E
+来源：牛客网
+
+题意：有一个2（n+m）的一个序列只有A和B构成，
+
+
 /***********************************************************************************************************************************/
 F  Random Point in Triangle
 /*
 链接：https://ac.nowcoder.com/acm/contest/881/F
 来源：牛客网
-题目描述 
-Bobo has a triangle ABC with A(x1,y1),B(x2,y2) and C(x3,y3). Picking a point P uniformly in triangle ABC, 
-he wants to know the expectation value 
-E=max{SPAB,SPBC,SPCA} where SXYZ denotes the area of triangle XYZ.Print the value of 
-36×E. It can be proved that it is always an integer.
-输入描述:
-The input consists of several test cases and is terminated by end-of-file.
-Each test case contains six integers x1,y1,x2,y2,x3,y3.|x1|,|y1|,|x2|,|y2|,|x3|,|y3|≤108
-* There are at most 
-10
-5
-105 test cases.
-输出描述:
-For each test case, print an integer which denotes the result.
-示例1
-输入
-0 0 1 1 2 2
-0 0 0 0 1 1
-0 0 0 0 0 0
-输出
-0
-0
-0
 */
 题意很简单，就是告诉你三个点的坐标，在三角形内部任意取一点P，求被P分成的三个子三角形的最大子三角形的面积期望
 
@@ -237,6 +329,7 @@ For each test case, print `=` if x/a=y/b. Print `<` if x/a<y/b. Print `>` otherw
 >
 =
 */ 
+
 这道题是分数比较大小，思路是将分数先化成带分数，先比较整数部分，之后比较真分数部分，真分数部分通过交叉相乘进行比较
 还有就是要特判分子为零的情况，内外最好都要特判一下，因为分子在化成真分数之后很有可能分子取余之后就变成0
 
