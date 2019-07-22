@@ -196,6 +196,8 @@ C Euclidean Distance
 3.不存在m比ai的总和大的情况
 
 代码来源zym
+hint：https://blog.csdn.net/weixin_43702895/article/details/96633290
+
 #include <iostream>
 #include <algorithm>
 #include <functional>
