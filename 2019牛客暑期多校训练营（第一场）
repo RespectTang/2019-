@@ -186,6 +186,56 @@ C Euclidean Distance
 
 因为题目是要求欧拉距离的最小值，并没有要求求P点坐标
 需要求得(a1−p1),(a2−p2),...,(an−pn)这一系列数的最小值
+将ai从大到小进行排序，然后将m分别从大到小分配给ai，分配的部分为a[i+1]-a[i]，即两个部分的差值
+这样的话就可以让a[1]到a[i]同步递减，这样可以收获更大的效益
+同步减小比只减小一个的效益要高
+
+分类讨论两种情况：
+1.m刚好被分配完，皆大欢喜
+2。m在分配几个ai之后不够分配ai+1，这个时候，a1到a[i]同步减小到一定值均分完m即可
+3.不存在m比ai的总和大的情况
+
+代码来源zym
+#include <iostream>
+#include <algorithm>
+#include <functional>
+using namespace std;
+typedef long long ll;
+const int maxn=1e4+5;
+int n,m,a[maxn];//题目所给变量
+ll getgcd(ll a,ll b){return (b==0?a:getgcd(b,a%b));}
+void get(ll &fm,ll &fz,ll m,ll z){//分数加法函数
+	ll gcd=getgcd(fz*m*m+z*z*fm,fm*m*m);
+	fz=(fz*m*m+z*z*fm)/gcd;
+	fm=fm*m*m/gcd;
+	return;
+}
+int main(){
+	while(~scanf("%d%d",&n,&m)){
+		int i,tot=0;
+		for(i=1;i<=n;i++)	scanf("%d",&a[i]);
+		sort(a+1,a+n+1,greater<int>());//由大到小排序
+		for(i=1;i<n;i++){
+			int x=a[i]-a[i+1];//每一个a[i]与a[i+1]之间的差值
+			if(tot+x*i<=m)	tot+=x*i;//tot是m已经分配的值，tot+x*i用来判断m还能不能分配值，使a[1],..,a[i]到a[i+1]的位置
+			else	break;//不能刚好分配
+		}
+		int rem=m-tot;//m剩余的值
+		//fz/fm等于前面a[1],...,a[i]最小能减少到多少
+		ll fz=i*a[i]-rem;
+		ll fm=m*i;
+		ll gcd=getgcd(fz*fz*i,fm*fm);
+		fz=fz*fz*i/gcd;fm=fm*fm/gcd;//约分
+		//(fz*fz*i)/(fm*fm)是前面a[1],...,a[i]对距离的贡献
+		for(i=i+1;i<=n;i++)	get(fm,fz,m,a[i]);//加上后面没有分配到值的a[i+1],..,a[n]对距离的贡献(a[i]*a[i])/m*m
+		//下面是输出限制
+		if(fm==1)	printf("%lld\n",fz);
+		else	printf("%lld/%lld\n",fz,fm);
+	}
+	return 0;
+} 
+
+
 
 
 
