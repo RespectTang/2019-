@@ -118,7 +118,63 @@ int main()
 如果第二大矩形是第一大矩形的子面积，那么计算的方法为长-1或者宽-1，这样进行计算
 
 hint：https://www.cnblogs.com/FrankChen831X/p/11221455.html
+别问，问就是不会单调栈只会写数组
+#include<cstdio>
+#include<algorithm>
+using namespace std;
 
+int n,m,p1,p2,max1,max2;
+int a[1005][1005],stk1[1005],stk2[1005];
+int l[1005],r[1005];
+char s[1005];
+int mx,my,xx,yy;
+
+int main(){
+    scanf("%d%d",&n,&m);
+    for(int i=1;i<=n;++i){
+        a[i][0]=-1,a[i][m+1]=-1;
+        scanf("%s",s);
+        for(int j=1;j<=m;++j){//初始化为高度矩阵 
+            int tmp=s[j-1]-'0';
+            if(tmp) a[i][j]=a[i-1][j]+1;
+        }
+    }
+    stk1[0]=0,stk2[0]=m+1;//用数组模拟单调栈 
+    for(int i=1;i<=n;++i){
+        p1=p2=1;
+        for(int j=1;j<=m;++j){//寻找最右边
+            while(a[i][stk1[p1-1]]>=a[i][j]) --p1;
+            l[j]=stk1[p1-1];
+            stk1[p1++]=j;
+        }
+        for(int j=m;j>=1;--j){//从后往前寻找最左边 
+            while(a[i][stk2[p2-1]]>=a[i][j]) --p2;
+            r[j]=stk2[p2-1];
+            stk2[p2++]=j;
+        }
+        for(int j=1;j<=m;++j){
+            int x=r[j]-l[j]-1,y=a[i][j];
+            if(!y) continue; 
+            int aa=i,bb=r[j]-1;
+            if(x*y>=max1){//去重 
+            /*
+			max1维护最大矩阵的大小，max2维护次大矩阵的大小，
+			mx、my维护最大矩阵的右下角下标，xx、yy维护最大矩阵的长和宽，
+			若当前面积值>=max1,需要比较是否是同一个矩阵（by mx、my、xx、yy是否相等来比较），
+			若是，则不能更新max2=max1,否则，即不是一个矩阵，则可以max2=max1.
+			*/ 
+                if(!(aa==mx&&bb==my&&x==xx&&y==yy)) 
+                    max2=max1;
+                max1=x*y,mx=aa,my=bb,xx=x,yy=y;
+            }
+            else if(x*y>max2)
+                max2=x*y;
+            max2=max(max2,max((x-1)*y,x*(y-1)));
+        }
+    }
+    printf("%d\n",max2);
+    return 0;
+}
 
 /*****************************************************************************************************************************************/
 I
