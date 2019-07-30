@@ -66,8 +66,101 @@ int main()
 
 hint：https://blog.csdn.net/ftx456789/article/details/97294635 代码来源为这个博客
       https://www.cnblogs.com/Yinku/p/11249564.html
-      
-      
+
+不是很想写题解了，这两个博客我觉得讲的蛮详细的了
+#include <bits/stdc++.h>
+using namespace std;
+typedef long long ll;
+long long quickmod(long long a,long long b,long long mod=1e9+7)//快速幂取模 
+{
+    long long ans=1;
+    while(b)
+    {
+        if(b%2==1)
+            ans=ans*a%mod;
+        b=b/2;
+        a=a*a%mod;
+    }
+    return ans;
+}
+pair<int,int>a[1005];//用一个pair来定义数组a,first表示分解后的质因数，second表示最小循环节d分解后的质因数的指数 
+int main()
+{
+    int t;
+    scanf("%d",&t);
+    while(t--)
+    {
+        long long p,n,m;
+        scanf("%lld%lld%lld",&p,&n,&m);
+        if(p==2||p==5)//特判25 
+        {
+            printf("0\n");
+            continue;
+        }
+        else if(p==3)//特判3 
+        {
+            printf("%lld\n",n/3*m);
+            continue;
+        }
+        long long x=p-1;//x为最小循环节的长度 
+        int minn=p-1;//minn 
+        for(int i=2; i*i<=x; i++)
+        {
+            if(x%i==0)
+            {
+                if(quickmod(10,i,p)==1)
+                    minn=min(minn,i);
+                if(quickmod(10,x/i,p)==1)
+                    minn=min(1ll*minn,x/i);
+            }
+        }
+        int cnt=0;
+        int maxn=0;
+        x=minn;
+        for(int i=2; i*i<=x; i++)//质因数分解i和d 
+        {
+            if(x%i==0)
+            {
+                a[cnt].first=0;//cnt为统计所有质因数的个数 
+                a[cnt].second=0;
+                a[cnt].first=i;
+                while(x%i==0)
+                {
+                    a[cnt].second++;
+                    x=x/i;
+                }
+                maxn=max(a[cnt].second,maxn);
+                cnt++;
+            }
+        }
+        if(x>1)
+        {
+            a[cnt].first=0;
+            a[cnt].second=0;
+            a[cnt].first=x;
+            a[cnt].second++;
+            maxn=max(a[cnt].second,maxn);//maxn为质因数分解循环节中最大的bx 
+            cnt++;
+        }
+        long long ans=0;
+        long long g=1;
+        for(int j=1; j<=min(1ll*maxn,m); j++)//如果j在[1,maxn]之间时，分别计算相对于每一个j的n/g 
+        {
+            g=1;
+            for(int i=0; i<cnt; i++)
+            {
+                g=g*quickmod(a[i].first,ceil(1.0*a[i].second/j));
+            }
+            ans+=n/g;
+        }
+        if(m>maxn)//如果j>maxn，那么g不再变化，每一个的贡献为n/g*(m-maxn) 
+            ans+=n/g*(m-maxn);
+        printf("%lld\n",ans);
+    }
+    return 0;
+}
+
+
      
  /***********************************************************************************************************************************/
  E
