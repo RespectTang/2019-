@@ -1,6 +1,120 @@
 这次居然有11道题
+/**************************************************************************************************************************************/
+A meeting
+链接：https://ac.nowcoder.com/acm/contest/884/A
+来源：牛客网
 
-A
+题意：在n个地方分散着k个网友，每个网友分别在不同的k个地方，他们要搞线下见面会。请问他们选在哪里，可以使网友到齐的时间最短
+这是一个n个节点有n-1条边的图，这样的话我们就可以将它转换为一个树
+这道题是求树的直径：
+树的直径的定义即为图中两个点之间的最远距离，很好理解为这道题求的是这个图的半径，即最长的距离/2并且向上取整
+做法为用两遍搜索
+第一遍搜索，以任意一个点为根节点，遍历与这个点距离最远的点，这样的话最后找到的这个点一定在树的直径上
+第二遍搜索，以刚才搜索到的一定在树的直径上的点为根节点，搜索到离这个点最远的点
+
+hint：https://blog.csdn.net/weixin_43751631/article/details/97637407
+
+如何找到最远的距离代码（寻找树的直径的模板），一般的模板中的树的直径还有一个条件就是每一条边都有一个value，本题中默认value为1
+#include"iostream"
+#include"cstdio"
+using namespace std;
+const int maxn = 1e5;
+struct Edge{
+	int Next,to,Value;
+}e[maxn*2+5];
+int N,M,cnt=0,des,ans=0,head[maxn+5];//des是离1点最远的点。
+
+void add_E(int a,int b,int c){//构造每一条边的关系 
+	e[++cnt].to = b;
+	e[cnt].Next = head[a];
+	head[a] = cnt;
+	e[cnt].Value = c;
+}
+
+void dfs(int x,int fa,int dis){
+	if(dis>ans){
+		ans = dis,des = x;
+	}
+	for(int i = head[x];i;i = e[i].Next){
+		int pp = e[i].to;
+		if(pp == fa)continue;
+		dis += e[i].Value;
+		dfs(pp,x,dis);
+	}
+	
+	
+}
+int x,y,v;
+int main(){
+	scanf("%d%d",&N,&M);
+	for(int i = 1;i <= M;i++){
+		scanf("%d%d%d",&x,&y,&v);
+		add_E(x,y,v);
+		add_E(y,x,v);
+	}
+	dfs(1,0,0);//第一遍dfs以结点1为根节点，搜索到des 
+	dfs(des,0,0);//第二遍以des为根节点搜索到最长的直径 
+	cout << ans<<endl;
+	return 0;
+}
+
+改了改上面的模板就过了，不过还是有小bug，比如一开始觉得把value改成1就可以了，并没有想到还要在遍历的时候判断这个节点是不是有人
+
+#include<iostream>
+using namespace std;
+const int maxn = 1e5;
+struct Edge{
+	int Next,to,Value;
+}e[maxn*2+5];
+int N,M,cnt=0,des,ans=0,head[maxn+5];//des是离1点最远的点。
+int in[maxn+5];
+void add_E(int a,int b,int c){//构造每一条边的关系 
+	e[++cnt].to = b;
+	e[cnt].Next = head[a];
+	head[a] = cnt;
+	e[cnt].Value = c;
+}
+
+void dfs(int x,int fa,int dis){
+	if(dis>ans&&in[x]){//限定树的节点，即保证这个节点是有人的
+		ans = dis,des = x;
+	}
+	for(int i = head[x];i;i = e[i].Next){
+		int pp = e[i].to;
+		if(pp == fa)continue;//防止成环 
+		//dis += e[i].Value;
+		dfs(pp,x,dis+1);//这里一开始我想的是value已经都是1了所以dis+=value也可以写为下面的dis+1，但是好像这样做是过不了的
+	}
+	
+	
+}
+int x,y,v;
+
+int main(){
+	scanf("%d%d",&N,&M);
+	for(int i = 1;i <= N-1;i++){
+		scanf("%d%d",&x,&y);
+		add_E(x,y,1);
+		add_E(y,x,1);
+	}
+
+	for(int i = 1;i <= M;i++)
+    	{
+    		int a;
+    		scanf("%d",&a);
+    		in[a] = 1;//将这个节点标识为合法
+    	}
+	dfs(1,0,0);//第一遍dfs以结点1为根节点，搜索到des 
+	dfs(des,0,0);//第二遍以des为根节点搜索到最长的直径 
+	
+	cout<<(ans+1)/2<<endl;
+	return 0;
+}
+
+
+
+
+/**************************************************************************************************************************************/
 B
 C
 D
