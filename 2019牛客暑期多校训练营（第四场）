@@ -116,7 +116,194 @@ int main(){
 
 /**************************************************************************************************************************************/
 B
-C
+/**************************************************************************************************************************************/
+C sequence
+
+链接：https://ac.nowcoder.com/acm/contest/884/C
+来源：牛客网
+
+题意为给你2个长度为n的区间 a区间和b区间
+区间的值为b区间之和乘以a区间的最小值，要你求出值最大的区间
+
+第一个思路，两遍的暴力搜索,第一个循环只判断b数组正数加上负数，sum>0时的情况,
+然后对于每一个值的正负号颠倒之后，第二个循环反过来判断sum<0的情况，因为正负颠倒之后用sum<0判断sum<0
+
+这样的思路可以过题，但是有反例，
+5
+1 2 3 4 5
+1 2 3 4 5
+
+这个样例应该是输出最大值是36，但是代码输出的是25
+
+#include<iostream>
+#include<cmath>
+using namespace std;
+typedef long long ll;
+const int maxn=1e5+10;
+
+ll a[maxn],b[maxn];
+
+int main()
+{
+	ll n;
+	scanf("%d",&n);
+	for(int i=0;i<n;i++) scanf("%lld",&a[i]);
+	for(int i=0;i<n;i++) scanf("%lld",&b[i]);
+	
+	ll minn=a[0],ans=a[0]*b[0],sum=b[0];//初始化区间 
+	
+	for(int i=1;i<n;i++)//第一个循环只判断b数组正数加上负数，sum>0时的情况
+	{
+		if(sum<0)
+		{
+			minn=a[i];
+			sum=b[i];
+		}
+		else 
+		{
+			sum+=b[i];
+			minn=min(minn,a[i]);
+			ans=max(ans,sum*minn);
+		}
+		a[i]*=(-1);
+		b[i]*=(-1);//将数组中的正元素变成负元素，把负元素变成正元素 
+	}
+	
+	minn=a[0],sum=b[0];
+	
+	for(int i=1;i<n;i++)//第二个循环反过来判断sum<0的情况，因为正负颠倒之后用sum<0判断sum<0 
+	{
+		ans=max(ans,a[i]*b[i]);
+		if(sum<0)
+		{
+			minn=a[i];
+			sum=b[i];
+		}
+		else 
+		{
+			sum+=b[i];
+			minn=max(minn,a[i]);//所以这里是max 
+			ans=max(ans,sum*minn);
+		}
+	}
+	printf("%lld\n",ans);
+	return 0;
+ } 
+
+第二个正常的方法，线段树+单调栈
+
+hint：https://blog.csdn.net/anthony1314/article/details/97535853
+
+记录下a数组每个点以他为最小值的区间最左边是哪个点，最右边是哪个点，用单调栈进行操作 r[i]表示右边界 l[i]表示左边界
+用线段树维护前缀和，如果a[i]为非负树，那么b区间和越大越好，区间值就为(sum[r[i]]-sum[l[i]-1])*a[i]
+如果为负数，尽量找区间和最小， 那么要在i之前找前缀和最大的位置，在i之后找前缀和最小的位置，最小减最大极为最优
+如果i之前前缀和为负数，那直接把左端点设在i最优
+
+#include<bits/stdc++.h>
+using namespace std;
+#define maxn 3000005
+#define ll long long
+#define inf 0x3f3f3f3f 
+int n,l[maxn],r[maxn];
+ll a[maxn], pre[maxn], sum[2][maxn<<2];
+ll b[maxn];
+void pushup(int rt) {
+	sum[0][rt] = max(sum[0][rt<<1], sum[0][rt<<1|1]);
+	sum[1][rt] = min(sum[1][rt<<1], sum[1][rt<<1|1]);
+}
+void build(int l, int r, int rt) {
+	if(l == r) {
+		sum[0][rt] = sum[1][rt] = pre[l];
+		return ;
+	}
+	int mid = (l+r)>>1;
+	build(l, mid, rt<<1);
+	build(mid+1, r, rt<<1|1);
+	pushup(rt);
+}
+ll qmax(int L, int R, int l, int r, int rt) {
+	if(L <= l && R >= r) {
+		return sum[0][rt];
+	}
+	int mid = (l+r)>>1;
+	ll ans = -inf;
+	if(L <= mid) {
+		ans = max(ans,qmax(L, R, l, mid, rt<<1));
+	}
+	if(R > mid) {
+		ans = max(ans, qmax(L, R, mid+1, r, rt<<1|1));
+	}
+	return ans;
+}
+ll qmin(int L, int R, int l, int r, int rt) {
+	if(L <= l && R >=r ) {
+		return sum[1][rt];
+	}
+	int mid = (l+r)>>1;
+	ll ans = inf;
+	if(L <= mid) {
+		ans = min(ans,qmin(L, R, l, mid, rt<<1));
+	}
+	if(R > mid) {
+		ans = min(ans, qmin(L, R, mid+1, r, rt<<1|1));
+	}
+	return ans;
+}
+int main() {
+	cin>>n;
+	for(int i = 1; i <= n; i++) {
+		scanf("%lld", &b[i]);
+	}
+	for(int i = 1; i <= n; i++) {
+		scanf("%lld", &a[i]);
+		pre[i] = pre[i-1] + a[i];//计算前缀和 
+	}
+	build(1, n, 1);
+	stack<int>s;
+	for(int i = 1; i <= n; i++) {
+		while(s.size() && b[s.top()] >= b[i]) {
+			s.pop();
+		}
+		if(s.empty()) {
+			l[i] = 1;
+		} else {
+			l[i] = s.top() + 1;
+		}
+		s.push(i);
+	}
+	while(!s.empty()) {
+		s.pop();
+	}
+	for(int i = n; i >= 1; i--) {
+		while(s.size() && b[s.top()] >= b[i]) {
+			s.pop();
+		}
+		if(s.empty()) {
+			r[i]=n;
+		} else {
+			r[i] = s.top() - 1;
+		}
+		s.push(i);
+	}
+	ll ans = -inf;
+	for(int i = 1; i <= n; i++) {
+		if(b[i] >= 0) {
+			ans = max(ans, (pre[r[i]] - pre[l[i]-1]) * b[i]);
+		} else {
+			ll maxx, minn;
+			maxx = qmax(l[i], i, 1, n, 1);
+			if(maxx < 0) {
+				maxx = 0; //前面区间 的最大值如果 小于0则不去直接以i为左边界
+			}
+			minn = qmin(i, r[i], 1, n, 1);
+			ans = max(ans, (minn - maxx) * b[i]);
+		}
+	}
+	cout << ans << endl;
+	return 0;
+}
+
+/**************************************************************************************************************************************/
 D
 E
 F
