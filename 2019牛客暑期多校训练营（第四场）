@@ -379,6 +379,145 @@ J free
 链接：https://ac.nowcoder.com/acm/contest/884/J
 来源：牛客网
 
+题意：n个城市，m条路，有k次将路的权值置0的机会，求从起点到终点的最小价值
+构造一个K+1层的分层图，然后在构造出来的图中用 dijstra算法算一遍最短路就可以了
+分层图中跑最短路解法代码：https://blog.csdn.net/qq_41603898/article/details/97537625
+
+tips：将原图扩展为一个n*(k+1)的分层图，遍历选择最短路的过程可以看做是遍历了所有的情况，所有的情况可以用一个一位vector<pair<int,int>>来保存
+
+#include <bits/stdc++.h>
+using namespace std;
+#define ll long long
+const int N = 1e5+10;
+const ll INF = 1e17;
+const int M = 2e5+10;
+ll cnt, k, n, m, s, t, v, u, ww;//起点s到终点t有k次免费走的机会
+ll dist[N][30], w[M];
+int fir[N], nex[M], to[M];
+struct Nod {
+	ll x, k, d;
+	bool operator<(const Nod &a)const {
+		return d > a.d;
+	}
+};
+void add(ll u, ll v, ll ww) {
+	nex[++ cnt] = fir[u];
+	fir[u] = cnt;
+	to[cnt] = v;
+	w[cnt] = ww;
+}
+ 
+ll dijstra() {
+ 
+	memset(dist,127,sizeof(dist));
+	priority_queue<Nod> que;
+	que.push((Nod) {s,0,0});
+	dist[s][0] = 0;
+	while(que.size()) {
+		Nod e = que.top();
+		que.pop();
+		if(e.d != dist[e.x][e.k]) continue;
+		if(e.x == t) return e.d;
+		for(int i = fir[e.x]; i; i = nex[i]) {
+			if(dist[to[i]][e.k] > dist[e.x][e.k] + w[i]) {
+				dist[to[i]][e.k] = dist[e.x][e.k] + w[i];
+				que.push((Nod) {to[i], e.k, dist[to[i]][e.k]});
+			}
+			if(e.k < k && dist[to[i]][e.k+1] > dist[e.x][e.k]) {
+				dist[to[i]][e.k+1] = dist[e.x][e.k];
+				que.push((Nod) {to[i],e.k+1,dist[to[i]][e.k+1]});
+			}
+		}
+	}
+}
+ 
+void init() {
+	cnt = 0;
+	memset(nex,0,sizeof(nex));
+	memset(fir,0,sizeof(fir));
+	memset(to,0,sizeof(to));
+}
+int main() {
+	
+	init();
+	scanf("%lld %lld %lld %lld %lld", &n, &m, &s, &t, &k);
+	for(int i = 1; i <= m; i ++) {
+		scanf("%lld%lld%lld", &v, &u, &ww);
+		if(u==v)continue;
+		add(v,u,ww);
+		add(u,v,ww);
+	}
+	printf("%lld\n",dijstra());
+	return 0;
+}
+
+DP解法：
+用一个二维数组存储，dis[u][t]表示从start走到u使用了t次决策，所以我们要求的是dis[T][k]
+状态转移方程：
+dis[v][t]=min(min,dis[u][t]+cost) 即模型中的从s先到v再到u是否比s直接到u要短
+更新方程：dis[v][t+1]=min(dis[v][t+1],dis[u][t]+0) 即为模型中的s到下一层的v再到u使得s到u变短
+
+hint：https://blog.csdn.net/qq_41648012/article/details/97615049
+
+#include<bits/stdc++.h>
+using namespace std;
+
+typedef long long ll;
+typedef pair<int,int>P;
+
+const int INF=0x3f3f3f3f;
+const int MAX_N=1e3+5;
+struct edge{
+    int to,cost;
+};
+
+int n,m,s,t,k;
+vector<edge> G[MAX_N];
+int d[MAX_N][MAX_N+1];
+
+void dijkstra(int f){
+    priority_queue<P,vector<P>,greater<P> >que;
+    que.push(P(0,s));
+    while(!que.empty()){
+        P p=que.top();que.pop();
+        int v=p.second;
+        if(d[v][f]<p.first)continue;
+        for(int i=0;i<G[v].size();i++){
+            edge &e=G[v][i];
+            if(d[e.to][f]>d[v][f]+e.cost){
+                d[e.to][f]=d[v][f]+e.cost;
+                que.push(P(d[e.to][f],e.to));
+            }
+        }
+    }
+}
+
+int main(){
+    scanf("%d%d%d%d%d",&n,&m,&s,&t,&k);s--,t--;
+    for(int i=0;i<m;i++){
+        int u,v,w;
+        scanf("%d%d%d",&u,&v,&w);u--,v--;
+        G[u].push_back((edge){v,w});
+        G[v].push_back((edge){u,w});
+    }
+    for(int i=0;i<n;i++)d[i][0]=INF;
+    d[s][0]=0;
+    dijkstra(0);
+    for(int i=1;i<=k;i++){
+        for(int v=0;v<n;v++)d[v][i]=d[v][i-1];
+        for(int v=0;v<n;v++){
+            for(int j=0;j<G[v].size();j++){
+                edge &e=G[v][j];
+                d[e.to][i]=min(d[e.to][i],d[v][i-1]);
+            }
+        }
+        dijkstra(i);
+    }
+    printf("%d\n",d[t][k]);
+	return 0;
+}
+
+
 /**************************************************************************************************************************************/
 K number
 链接：https://ac.nowcoder.com/acm/contest/884/K
