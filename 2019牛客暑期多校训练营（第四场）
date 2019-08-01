@@ -199,6 +199,10 @@ hint：https://blog.csdn.net/anthony1314/article/details/97535853
 如果为负数，尽量找区间和最小， 那么要在i之前找前缀和最大的位置，在i之后找前缀和最小的位置，最小减最大极为最优
 如果i之前前缀和为负数，那直接把左端点设在i最优
 
+总的来说，就是用单调栈找到每一个点的管辖范围，这个范围是指在这一个区间内都是这个点为最小值
+线段树的作用是用线段树来存储前缀和，这样的话很容易可以找到一个区间的前缀和最值，同时求区间的和也只需要两端的前缀和相减即可
+本题中没有线段树的查询，只有建树的过程就可以了
+
 #include<bits/stdc++.h>
 using namespace std;
 #define maxn 3000005
@@ -307,6 +311,62 @@ int main() {
 D triples
 链接：https://ac.nowcoder.com/acm/contest/884/D
 来源：牛客网
+
+题意：给你一个数n，让你输出一些数字的或和可以得到n，这些数字一定是3的倍数
+
+hint：https://blog.csdn.net/weixin_43751631/article/details/97901294#commentBox
+推理和代码：https://www.cnblogs.com/wizarderror/p/11265390.html
+
+题解：分类讨论
+如果n是3的倍数，那么可以直接输出它本身
+如果不是3的倍数，那么这个数如果能被或得到，一定只有两个数，否则则不能被3的倍数或得到
+
+任何数mod3之后只有三种情况：1,2,0
+如果2进制位mod3则  512 128 64 32 16 8 4 2 1
+		   2   2   1  2  1 2 1 2 1
+如果xmod3为p,那么寻找在x的二进制位中为1的地方对应的二进制位mod3为p的地方，相减之后得出答案
+
+例如19的二进制表示为10011，并且19%3=1，观察上表中%3=1的部分，分别由16 4 1三位，观察19的二进制位中在16位和1位为1，
+所以19-16=3,19-1=18，得出18|3=19
+
+非常的神奇
+#include<bits/stdc++.h>
+using namespace std;
+typedef long long ll;
+ll a;
+void solve()
+{
+    scanf("%lld",&a);
+    vector<ll> bb[2];
+    for(int i=0;i<=60;i++)
+    if((a>>i)&1) bb[i&1].push_back(1LL<<i); //记录每一个1的位置和保存他的奇偶 
+    if(a%3==0)
+    printf("1 %lld\n",a);  //本身 
+    else if(bb[1].size()+bb[0].size()<=2)  return;//凑不出 (这里可能需要稍微仔细体会下)
+    else{
+        ll x,y;
+        int s = (a%3==2); //余数是2还是1 
+        if(bb[s].size()){//如果原数里有我们需要的，可以直接减去的 
+            x = a-bb[s][0];
+            if(bb[!s].size()) y = (bb[s][0]) + (bb[!s][0]); //凑3的两种方式 
+            else y = a - bb[s][1];
+        }else{ //原数里没有余数 
+            x = a-(bb[!s][0]+bb[!s][1]);
+            y =    bb[!s][0]+bb[!s][1]+bb[!s][2];
+        }
+        printf("2 %lld %lld\n",x,y);
+    }
+}
+int main()
+{
+    int T; cin>>T;
+    while(T--){
+        solve();
+    } 
+    return 0;
+}
+
+
 
 /**************************************************************************************************************************************/
 E
