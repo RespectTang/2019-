@@ -325,7 +325,6 @@ STR是S删掉除过AB两字符剩下的子串，现在求S，多种情况输出�
 
 拓博排序题目，首先根据已知的序列构造出一个拓补图，寻找入度为0的点，找到之后删除这个点和相应的边关系，这样就可以得到一个序列
 为了使答案唯一所以一般从字典序最小的那一端开始，同时要运用一个哈希函数给每一个字符编号
-
 #include <bits/stdc++.h>
 #define ll long long
 using namespace std;
@@ -334,27 +333,27 @@ const int INF = 0x3f3f3f3f;
 const ll mod = 1e9 + 7;
 int num[30];
 int in[maxn];//入度 
-vector<int> e[maxn];
+vector<int> e[maxn];//保存边的关系 
 string ans="";
 int n,m;
 int topsort()
 {
 	queue<int> q;
 	for(int i=0;i<26;i++){
-		if(in[i*10000+1]==0&&num[i]!=0){
-			q.push(i*10000+1);
+		if(in[i*10000+1]==0&&num[i]!=0){//如果一个点入度为0并且这个字符存在于原序列 
+			q.push(i*10000+1);//加入队列 
 		}
 	}
 	while(!q.empty()){
 		int u=q.front();q.pop();
-		ans+=(u-1)/10000+'a';
+		ans+=(u-1)/10000+'a';//将哈希函数恢复成为字符 
 		for(int v=0;v<e[u].size();v++){
-			if(--in[e[u][v]]==0){
+			if(--in[e[u][v]]==0){//入度-1，并且删除这条边的关系 
 				q.push(e[u][v]);
 			}
 		}
 	}
-    return ans.size();
+    return ans.size();//如果找完ans的长度和n相等，那么这个序列则为合法序列 
 }
 int main()
 {
@@ -365,7 +364,8 @@ int main()
 		int na=0; int nb=0;
 		cin>>a>>b>>len;
 		if(len==0) continue;
-		string s; cin>>s;
+		string s; 
+		cin>>s;
 		int pre=-1;//首结点 
 		for(int i=0;i<len;i++){
 			int pos=0;
@@ -378,7 +378,7 @@ int main()
 			}
 			if(pre==-1){
 				pre=pos;
-			}else{
+			}else{//如果存在前结点则 
 				e[pre].push_back(pos);
 				in[pos]++;
 				pre=pos;
@@ -393,6 +393,7 @@ int main()
 	else cout<<-1<<endl;
 	return 0;
 } 
+
 
 
 
