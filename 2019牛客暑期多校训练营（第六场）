@@ -139,7 +139,81 @@ E
 /********************************************************************************************************************************************/
 F
 /********************************************************************************************************************************************/
-G
+G Is today Friday?
+
+题意：字母A to J代表0到9的数字，但是映射不唯一，给出n组用字母表示的日期，并且这些日期都是星期五，求字母A~J的映射关系
+
+题解：使用next_permutation()函数对于映射进行全排列，这样从前往后扫描就可以使得字典序最小
+判断是否为星期五的话可以用蔡勒公式进行判断
+蔡勒公式：
+1582年10月4日后：w = (d + 1+ 2*m+3*(m+1)/5+y+y/4-y/100+y/400)%7;
+1582年10月4日前：w = (d+1+2*m+3*(m+1)/5+y+y/4+5) % 7;
+
+#include<cmath>
+#include<cstdio>
+#include<string>
+#include<cstring>
+#include<iostream>
+#include<algorithm>
+#include<functional>
+using namespace std;
+#define sc(x) scanf("%d",&x);
+#define scll(x) scanf("%lld",&x);
+int mon[13]={0,31,28,31,30,31,30,31,31,30,31,30,31},n;
+int num[12]={0,1,2,3,4,5,6,7,8,9};
+string s[100010];
+bool judge(int y,int m,int d){
+    if((y%4==0 && y%100!=0) || y%400==0) mon[2]=29;
+    else mon[2]=28;
+    if(y<1600 || y>9999) return 1;
+    if(m<1 || m>12) return 1;
+    if(d<1 || d>mon[m]) return 1;
+    return 0;
+}
+bool zaller(int y,int m,int d){
+    if(m==1 || m==2) m+=12,y--;
+    //基姆拉尔森计算公式
+//  return ((d+2*m+3*(m+1)/5+y+y/4-y/100+y/400)%7+1)%7==5?1:0;
+    int c=y/100;y=y%100;
+    return ((y+y/4+c/4-2*c+26*(m+1)/10+d-1)%7+7)%7==5?1:0;
+}
+bool check(){
+    for(int i=0;i<n;i++){
+        int y=0,m=0,d=0;
+        y=num[(s[i][0]-'A')]*1000+num[(s[i][1]-'A')]*100+num[(s[i][2]-'A')]*10+num[(s[i][3]-'A')];
+        m=num[(s[i][5]-'A')]*10+num[(s[i][6]-'A')];
+        d=num[(s[i][8]-'A')]*10+num[(s[i][9]-'A')];
+//      printf("%d:%d:%d\n",y,m,d);
+        if(judge(y,m,d)) return 0;
+        if(zaller(y,m,d)==0) return 0;
+    }
+    return 1;
+}
+int main(){
+    int x,t;sc(t);x=t;
+    while(t--){
+        sc(n);
+        for(int i=0;i<n;i++) cin >> s[i];
+        sort(s,s+n);
+        n=unique(s,s+n)-s;
+//      for(int i=0;i<n;i++) cout << endl << s[i] << endl;
+        for(int i=0;i<10;i++) num[i]=i;
+        bool flag=0;
+        printf("Case #%d: ",x-t);
+        do{
+            if(check()){
+                flag=1;
+                for(int j=0;j<10;j++)
+                    printf("%d",num[j]);
+                printf("\n");
+                break;
+            }
+        }while(next_permutation(num,num+10));
+        if(!flag)
+            printf("Impossible\n");
+    }
+    return 0;
+}
 /********************************************************************************************************************************************/
 H
 /********************************************************************************************************************************************/
