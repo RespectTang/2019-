@@ -219,8 +219,10 @@ F
 /********************************************************************************************************************************************/
 G Is today Friday?
 
-题意：字母A to J代表0到9的数字，但是映射不唯一，给出n组用字母表示的日期，并且这些日期都是星期五，求字母A~J的映射关系
+链接：https://ac.nowcoder.com/acm/contest/886/G
+来源：牛客网
 
+题意：字母A to J代表0到9的数字，但是映射不唯一，给出n组用字母表示的日期，并且这些日期都是星期五，求字母A~J的映射关系
 题解：使用next_permutation()函数对于映射进行全排列，这样从前往后扫描就可以使得字典序最小
 判断是否为星期五的话可以用蔡勒公式进行判断
 蔡勒公式：
@@ -297,5 +299,139 @@ H
 /********************************************************************************************************************************************/
 I
 /********************************************************************************************************************************************/
-J
+J Upgrading Technology
+链接：https://ac.nowcoder.com/acm/contest/886/J
+来源：牛客网
+
+题意：有n个技能，m个等级，给出每个技能升一级所需要的花费和当所有技能都升级到某一级时获得的奖励，问可以获得的最大奖励
+
+杨鑫做法：
+因为cost和reward是相反的，所以将cost反过来，这样的话将cost和reward都统一成reward
+然后定义一个sum数组计算每个等级可以获得的reward
+从后往前dp搜索，dp[i]=max(dp[i+1]+v[i+1],dp[i+1])
+dp[i]代表每个技能往后点可以点到的最大价值
+接下来更新sum数组，sum[i]为最小等级为i的时候的情况，要保证存在一个sum[i]的最小等级还在i，这样的话，如果都为正数则减去最小的，如果有负数，则不加负数
+sum[i]+=dp[i]，然后减去最小的值
+#include<iostream>
+#include<cstdio>
+#include<algorithm>
+#include<cstring>
+using namespace std;
+typedef long long ll;
+const int maxn = 1005;
+struct people {
+    ll value[maxn];
+    ll dp[maxn];
+}p[maxn];
+ll he[maxn];
+ll ans;
+ll de[maxn];
+int n, m;
+int main()
+{
+    int lun=0;
+    int t;
+    cin >> t;
+    while (t--) {
+        lun++;
+        scanf("%d%d", &n, &m);
+        memset(he, 0, sizeof(he));
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j <= m; j++) {
+                scanf("%lld", &p[i].value[j]);
+                p[i].value[j] *= -1;
+                he[j] += p[i].value[j];
+            }
+            p[i].dp[m] = 0;
+            for (int j = m - 1; j >= 0; j--) {
+                p[i].dp[j] = max(p[i].value[j + 1], p[i].value[j + 1] + p[i].dp[j + 1]);
+            }
+        }
+        for (int i = 1; i <= m; i++) {
+            scanf("%lld", &de[i]);
+            he[i] += de[i];
+            he[i] += he[i - 1];
+        }
+        ans = 0;
+        for (int i = 0; i < m; i++) {
+            bool full = true;
+            for (int j = 1; j <= n; j++) {
+                if (p[j].dp[i] > 0) {
+                    he[i] += p[j].dp[i];
+                }
+                if (p[j].dp[i] < 0)
+                    full = false;
+            }
+            if (full == true) {
+                ll min0 = p[1].dp[i];
+                for (int j = 2; j <= n; j++) {
+                    min0 = min(p[j].dp[i], min0);
+                }
+                he[i] -= min0;
+            }
+        }
+ 
+ 
+        for (int i = 0; i <= m; i++) {
+            ans = max(ans, he[i]);
+        }
+        printf("Case #%d: %lld\n",lun, ans);
+    }
+}
+/*
+1
+3 3
+1 -1 3
+1 -2 3
+1 -3 3
+2 -122 3
+ 
+1
+2 2
+-5 5
+2 5135
+-5335 315
+ 
+*/
+
+代码来源：梁立
+#include<iostream>
+using namespace std;
+#define sc(x) scanf("%d",&x);
+#define scll(x) scanf("%lld",&x);
+typedef long long ll;
+const int inf=0x3f3f3f3f;
+const int maxn = 1e3 + 5;
+int main(){
+    int t,x;
+    sc(t);x=t;
+    while(t--){
+        int n,m;
+        sc(n);sc(m);
+        ll cost[maxn][maxn]={0},sumcost[maxn][maxn]={0},mincost[maxn][maxn]={0},grade[maxn]={0};
+        for(int i=1;i<=n;i++){
+            for(int j=1;j<=m;j++){
+                scll(cost[i][j]);
+                sumcost[i][j]=sumcost[i][j-1]+cost[i][j];
+            }
+            mincost[i][m+1]=inf;
+            for(int j=m;~j;j--)
+                mincost[i][j]=min(mincost[i][j+1],sumcost[i][j]);
+        }
+        for(int i=1;i<=m;i++){
+            scll(grade[i]);
+            grade[i]+=grade[i-1];
+        }
+        ll ans=0;
+        for(int i=0;i<=m;i++){
+            ll res=grade[i];
+            for(int j=1;j<=n;j++)
+                res-=mincost[j][i];
+            for(int j=1;j<=n;j++)
+                ans=max(ans,res+mincost[j][i]-sumcost[j][i]);
+        }
+        printf("Case #%d: %lld\n",x-t,ans);
+    }
+    return 0;
+}
 /********************************************************************************************************************************************/
