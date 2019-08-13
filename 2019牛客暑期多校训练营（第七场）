@@ -220,26 +220,25 @@ hint:https://www.cnblogs.com/wizarderror/p/11335953.html?tdsourcetag=s_pcqq_aiom
 对于区间的左右端点考虑离散化，因为可能区间是[1,3]和[345678,567890999]这样的
 
 用两个树状数组分别维护Ni和Li的前缀和以及m
-
 #include <iostream>
 #include <algorithm>
 using namespace std;
 typedef long long ll;
 const int maxn = 400010;
 
-int n, cnt, tot;
-int x[maxn], y[maxn], l[maxn], r[maxn];
-int a1, b1, c1, a2, b2, c2, m1, m2;
-int z[maxn<<1], bit1[maxn<<1], bit2[maxn<<1];
+ll n, cnt, tot;
+ll x[maxn], y[maxn], l[maxn], r[maxn];
+ll a1, b1, c1, a2, b2, c2, m1, m2;
+ll z[maxn<<1], bit1[maxn<<1], bit2[maxn<<1];
  
-void add(int a[], int i, int x) {
+void add(ll a[], ll i, ll x) {
     while (i<=cnt) {
         a[i] += x;
         i += i&(-i);
     }
 }
-int query(int a[], int i){
-    int res = 0;
+ll query(ll a[], ll i){
+    ll res = 0;
     while (i>0) {
         res += a[i];
         i -= i&(-i);
@@ -251,7 +250,7 @@ void read()
     cin>>n;
     cin>>x[1]>>x[2]>>a1>>b1>>c1>>m1;
     cin>>y[1]>>y[2]>>a2>>b2>>c2>>m2;
-    for(int i = 1; i <= n; i++){
+    for(ll i = 1; i <= n; i++){
         if(i>2){
             x[i] = (a1*x[i-1]+b1*x[i-2]+c1)%m1;
             y[i] = (a2*y[i-1]+b2*y[i-2]+c2)%m2;
@@ -261,23 +260,23 @@ void read()
         z[++cnt] = l[i]; z[++cnt] = r[i]+1;
     }
     sort(z+1,z+cnt+1);
-    cnt = unique(z+1,z+cnt+1)-z;
+    cnt = unique(z+1,z+cnt+1)-z-1;
 } 
 
 int main()
 {
     read();
-    for(int i = 1; i <= n; i++) {
+    for(ll i = 1; i <= n; i++) {
         tot += r[i]-l[i]+1;
-        int L=lower_bound(z+1,z+cnt,l[i])-z, R=lower_bound(z+1,z+cnt,r[i]+1)-z;
+        ll L=lower_bound(z+1,z+cnt,l[i])-z, R=lower_bound(z+1,z+cnt+1,r[i]+1)-z;
         add(bit1,L,-l[i]), add(bit1,R,r[i]+1);//Ni前缀和 
         add(bit2,L,1), add(bit2,R,-1);//Li前缀和 
         //二分查找
-        int left = 1, right = 1e9;
+        ll left = 1, right = 1e9;
         while(left<right) {
-            int mid = (left+right)/2;
-            int q = upper_bound(z+1,z+cnt,mid)-z-1;
-            int tmp = query(bit1, q)+query(bit2, q)*(mid+1);//找到有多少个小于当前值的数量 
+            ll mid = (left+right)/2;
+            ll q = upper_bound(z+1,z+cnt,mid)-z-1;
+            ll tmp = query(bit1, q)+query(bit2, q)*(mid+1);//找到有多少个小于当前值的数量 
             if(tmp<(tot+1)/2) left = mid+1;
             else right = mid;
         }
@@ -288,7 +287,143 @@ int main()
 
 
 /***************************************************************************************************************************************/
-F
+F Energy Stone
+链接：https://ac.nowcoder.com/acm/contest/887/F
+来源：牛客网
+
+hint：https://www.cnblogs.com/wizarderror/p/11338597.html?tdsourcetag=s_pcqq_aiomsg
+
+题意：
+有n块能量石，每秒钟会增加Li的能量，但是一旦增长到了Ci它就不会增长了，
+它初始的能量为Ei。 
+现在有若干个时刻ti，会选择下标在[Si,Ti]的能量石吸取它们的能量，这些能量石的能量变为0，
+并依据上述规则继续增长。 问最后一共吸取了多少能量？
+
+题的做法是线性期望性，
+比如有m次查询，我直接每次求多个数据的期望和，最后把这m次期望加起来就是答案，
+但是你发现每次求多个数据的期望的时候操作次数太多了，导致很难求或者时间复杂度过高。
+那么我们换个思路想一下，要是我们能分别求出每个数据在这m次查询中的期望，那么最后加起就是所有数据的期望。
+
+这里我们考虑每块石头吸取了多少能量（即每个石头对答案的贡献）
+假如我们能够维护出每块石头被吸取能量的若干个时间点，那么它们的增长能量的时间区间会是一条条线段(时间差)。
+那么考虑这些线段长度大于等于[Ci/Li]的线段，它们的贡献是Ci，其他线段都没有长满，那么是ti*Li 。
+
+那么考虑如何维护线段？用set + 树状数组
+用一个set，考虑插入一个时间点会让一条原本的线段分裂成两段，删除一个时间点会让两个线段合并。（至多修改三个区间差）
+
+那么对于一次吸取操作(ti，Si，Ti)，相当于我们枚举到Si的时候插入ti这个时间点，枚举到Ti+1的时候删除ti这个时间点。
+
+只是在没遇到Ti+1前一直保留这个时间点ti，这样就能保证在这个区间内每个点都能有这个时间点的信息
+然后我们用树状数组维护这个线段
+两个树状数组分别维护：
+1.每个时间段一共有多少时间（可以求出<[Ci/Li]累计的时间）
+2.每个时间段的个数（可以求出>=[Ci/Li]的时间段总数）
+最后要注意Li等于0的情况，处理一下初始状态就可以了
+
+关于计算初始状态，
+对于计算每个石头的贡献，我们实际是由最开始一个时间点出发，然后不断到下一个时间点，直到最后一个时间点得出答案。
+如果合并成线段的话，就变成最开始的一个时间点加上相邻的点构成的线段也可以到达最后一个时间点。
+因此我们计算初始状态是用的第一个时间点，与我们树状数组存的时间差没有关系，不要搞混淆了。ans更新的时候s.size()-1减的就是第一个时间点。
+
+
+#include<bits/stdc++.h>
+#define pb push_back
+#define F first
+#define S second
+using namespace std;
+typedef long long ll;
+const int maxn=2e5+6;
+int _,n,m;
+vector <int> h[maxn];
+set <int> s;
+ll d,E[maxn],L[maxn],C[maxn],a[maxn],b[maxn],ans;
+ll qry1(int x){
+    ll ret=0;
+    while (x){
+        ret+=a[x];
+        x-=x&(-x);
+    }
+    return ret;
+}
+ll qry2(int x){
+    ll ret=0;
+    while (x){
+        ret+=b[x];
+        x-=x&(-x);
+    }
+    return ret;
+}
+void Add(int x,int y){
+    while (x<maxn){
+        if (y>0) a[x]++; else a[x]--;
+        b[x]+=y;
+        x+=x&(-x);
+    }
+}
+void add(int x){
+    if (s.size()==0) {s.insert(x);return;}
+    auto p=s.lower_bound(x);
+    if (p==s.begin()){
+        int t=(*p)-x;
+        Add(t,t);
+    } else if (p==s.end()){
+        int t=x-(*(prev(p)));
+        Add(t,t);
+    } else {
+        int s=(*p)-x,t=x-(*(prev(p)));
+        Add(s,s);Add(t,t);
+        Add(s+t,-s-t);
+    }
+    s.insert(x);
+}
+void del(int x){
+    auto p=s.find(x);
+    if (s.size()==1) {s.erase(p);return;}
+    if (p==s.begin()){
+        int t=(*(next(p)))-x;
+        Add(t,-t);
+    } else if (p==prev(s.end())){
+        int t=x-(*(prev(p)));
+        Add(t,-t);
+    } else {
+        int s=(*(next(p)))-x;
+        int t=x-(*(prev(p)));
+        Add(t,-t);
+        Add(s,-s);
+        Add(t+s,t+s);
+    }
+    s.erase(p);
+}
+ 
+int main(){
+    int kase=0;
+    scanf("%d",&_);
+    while (_--){
+        s.clear(); scanf("%d",&n); ans=0;
+        for (int i=1;i<=n;i++) scanf("%lld%lld%lld",&E[i],&L[i],&C[i]);
+        scanf("%d",&m);
+        memset(a,0,sizeof(a));
+        memset(b,0,sizeof(b));
+        for (int i=1;i<=n+1;i++) h[i].clear();
+        while (m--){
+            int t,l,r;
+            scanf("%d%d%d",&t,&l,&r);
+            h[l].pb(t); h[r+1].pb(-t);
+        }
+        for (int i=1;i<=n+1;i++){
+            for (auto x:h[i]){
+                if (x>0) add(x); else del(-x);
+            }
+            if (!s.size()) continue;
+            ans+=min(C[i],E[i]+(*s.begin())*L[i]);
+            if (L[i]==0) continue;
+            d=C[i]/L[i];
+            ans+=qry2(d)*L[i]+(s.size()-1-qry1(d))*C[i];
+        }
+        printf("Case #%d: %lld\n",++kase,ans);
+    }
+    return 0;
+}
 /***************************************************************************************************************************************/
 G
 /***************************************************************************************************************************************/
