@@ -4,8 +4,48 @@ A String
 
 题意：一个01字符串，将它切割成若干个完美字符串，完美字符串的意义是这个字符串成环之后的字典序最小
 
-题解：字符串的最小表示
+题解：字符串的最小表示和暴力解法
+无论是哪一种方法，遍历方法都是先以整个字符串为一个序列start=0，end=n-1，判断着整个字符串是不是最小表示的，
+如果不是的话则end--；
+如果是的话则start=end；end=n-1
+字符串的最小表示是一种判断这个字符串是否是循环之后的最小字典序的那个字符串
+#include<cmath>
+#include<iostream>
+using namespace std;
+typedef long long ll;
 
+bool judge(string s){
+    int n=s.size();
+    for(int i=1;i<n;i++){
+        for(int j=0;j<n;j++){
+            if(s[j]<s[(i+j)%n]) break;
+            if(s[j]>s[(i+j)%n]) return false;
+        }
+    }
+    return true;
+}
+
+int main(){
+    int t;
+    cin>>t; 
+    while(t--){
+        string s;
+        cin >> s;
+        int n=s.size(),i=0;
+        while(i<n){
+            for(int j=n-i;j>0;j--){
+                if(judge(s.substr(i,j))){
+                    cout << s.substr(i,j);
+                    i+=j;
+                    if(i<n) printf(" ");
+                    break;
+                }
+            }
+        }
+        printf("\n");
+    }
+    return 0;
+}
 
 /***************************************************************************************************************************************/
 B Irreducible Polynomial
@@ -157,7 +197,96 @@ int main(){
 } 
 
 /***************************************************************************************************************************************/
-E
+E Find the Median
+
+链接：https://ac.nowcoder.com/acm/contest/887/E
+来源：牛客网
+
+hint:https://www.cnblogs.com/wizarderror/p/11335953.html?tdsourcetag=s_pcqq_aiomsg
+
+题意：首先有一个空序列，接下来给出两个数组L[i]和R[i]，表示有i次操作，将区间Li到Ri之间的所有数字插入这个序列中，求每一次插入之后的中位数
+
+小于中位数的数字恰好有tot/2个，这样就将问题转化成如何求等于某个数x的数一共有多少个
+
+假设做断电小于等于x的去加一共有q个，
+
+如果x不落在任何一个区间，那么就是i=1—q的(Ri-Li+1)的和
+如果x落在了m个区间之中，那么答案就是sum(i=1—(q-m)(Ri-Li+1))+sum(i=(q-m+1)—(q)(Ri-Li+1))
+
+令Ni=Ri+1
+这样ans=sum(Ni<=x(Ni))-sum(Li<=x(Li+m))
+
+可以归于一种情况，因为在第一种情况下m=0
+对于区间的左右端点考虑离散化，因为可能区间是[1,3]和[345678,567890999]这样的
+
+用两个树状数组分别维护Ni和Li的前缀和以及m
+
+#include <iostream>
+#include <algorithm>
+using namespace std;
+typedef long long ll;
+const int maxn = 400010;
+
+int n, cnt, tot;
+int x[maxn], y[maxn], l[maxn], r[maxn];
+int a1, b1, c1, a2, b2, c2, m1, m2;
+int z[maxn<<1], bit1[maxn<<1], bit2[maxn<<1];
+ 
+void add(int a[], int i, int x) {
+    while (i<=cnt) {
+        a[i] += x;
+        i += i&(-i);
+    }
+}
+int query(int a[], int i){
+    int res = 0;
+    while (i>0) {
+        res += a[i];
+        i -= i&(-i);
+    }
+    return res;
+}
+void read()
+{
+    cin>>n;
+    cin>>x[1]>>x[2]>>a1>>b1>>c1>>m1;
+    cin>>y[1]>>y[2]>>a2>>b2>>c2>>m2;
+    for(int i = 1; i <= n; i++){
+        if(i>2){
+            x[i] = (a1*x[i-1]+b1*x[i-2]+c1)%m1;
+            y[i] = (a2*y[i-1]+b2*y[i-2]+c2)%m2;
+        }
+        l[i] = min(x[i],y[i])+1;
+        r[i] = max(x[i],y[i])+1;
+        z[++cnt] = l[i]; z[++cnt] = r[i]+1;
+    }
+    sort(z+1,z+cnt+1);
+    cnt = unique(z+1,z+cnt+1)-z;
+} 
+
+int main()
+{
+    read();
+    for(int i = 1; i <= n; i++) {
+        tot += r[i]-l[i]+1;
+        int L=lower_bound(z+1,z+cnt,l[i])-z, R=lower_bound(z+1,z+cnt,r[i]+1)-z;
+        add(bit1,L,-l[i]), add(bit1,R,r[i]+1);//Ni前缀和 
+        add(bit2,L,1), add(bit2,R,-1);//Li前缀和 
+        //二分查找
+        int left = 1, right = 1e9;
+        while(left<right) {
+            int mid = (left+right)/2;
+            int q = upper_bound(z+1,z+cnt,mid)-z-1;
+            int tmp = query(bit1, q)+query(bit2, q)*(mid+1);//找到有多少个小于当前值的数量 
+            if(tmp<(tot+1)/2) left = mid+1;
+            else right = mid;
+        }
+        cout<<left<<endl;
+    }
+    return 0;
+}
+
+
 /***************************************************************************************************************************************/
 F
 /***************************************************************************************************************************************/
