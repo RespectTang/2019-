@@ -1,0 +1,50 @@
+B.Quadratic equation
+链接：https://ac.nowcoder.com/acm/contest/889/B
+来源：牛客网
+题意：就是求满足(x+y)%p=b,(x*y)%p=c，0<=x<=y<p,的x，y的值
+
+题解：
+我们知道x+y，怎样求x和y呢，想到求出x-y这样就可以求出x，y来了，知道(x-y)^2=(x+y)^2-4xy=(b^2-4c)%p
+因为0<=x<p,0<=y<p,所以0<=x+y<2p,所以x+y=b或者b+p,结果就显然了，
+带进去即可，因为取模，所以带进b和b+p是一样的，这样我们利用二次剩余就求出x-y来了,当然由于取模所以求出的两个值对最终结果是一样的
+
+二次剩余定理：https://www.cnblogs.com/zarth/p/7373750.html
+
+/*
+不考虑取模的情况下，(x-y)^2=(x+y)^2-4xy=b^2=4ac
+在去模的意义下，(x-y)^2同余b^2-4c(mod p)
+因为a是模p的二次剩余的充分必要条件为a^(p-1)/2同余1(mod p)
+所以根据二次剩余定理求出x-y 
+*/ 
+
+#include<bits/stdc++.h>
+using namespace std;
+#define ll long long
+const int mod=1e9+7,inv2=(mod+1)/2;
+int Pow(int x,int n)
+{
+    int k=1;
+    while(n){
+        if(n&1) k=(ll)k*x%mod;
+        x=(ll)x*x%mod;
+        n>>=1;
+    }
+    return k;
+}
+int main()
+{
+    int T; scanf("%d",&T);
+    while(T--){
+        int a,b; scanf("%d%d",&a,&b);
+        int k=(((ll)a*a-4ll*b)%mod+mod)%mod;
+        int v=Pow(k,(mod+1)/4); //根据二次剩余求出x-y
+        if((ll)v*v%mod!=k){
+            puts("-1 -1");
+            continue;
+        }
+        int x=(ll)(v+a)*inv2%mod;
+        int y=(a-x+mod)%mod;
+        if(x>y) printf("%d %d\n",y,x);
+        else printf("%d %d\n",x,y);
+    }
+}
